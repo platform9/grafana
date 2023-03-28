@@ -36,6 +36,9 @@ type Provider interface {
 	// the current configured pairs of key/values for each
 	// configuration section.
 	Current() SettingsBag
+
+	CurrentVerbose() VerboseSettingsBag
+
 	// Update receives a SettingsBag with the pairs of key/values
 	// to be updated per section and a SettingsRemovals with the
 	// section keys to be removed.
@@ -90,6 +93,7 @@ type ReloadHandler interface {
 }
 
 type SettingsBag map[string]map[string]string
+type VerboseSettingsBag map[string]map[string]map[string]string
 type SettingsRemovals map[string][]string
 
 func ProvideProvider(cfg *Cfg) *OSSImpl {
@@ -109,6 +113,20 @@ func (o OSSImpl) Current() SettingsBag {
 		settingsCopy[section.Name()] = make(map[string]string)
 		for _, key := range section.Keys() {
 			settingsCopy[section.Name()][key.Name()] = RedactedValue(EnvKey(section.Name(), key.Name()), key.Value())
+		}
+	}
+
+	return settingsCopy
+}
+
+func (o OSSImpl) CurrentVerbose() VerboseSettingsBag {
+	settingsCopy := make(VerboseSettingsBag)
+
+	for _, section := range o.Cfg.Raw.Sections() {
+		settingsCopy[section.Name()] = make(map[string]map[string]string)
+		for _, key := range section.Keys() {
+			settingsCopy[section.Name()][key.Name()] = make(map[string]string)
+			settingsCopy[section.Name()][key.Name()]["value"] = RedactedValue(EnvKey(section.Name(), key.Name()), key.Value())
 		}
 	}
 
