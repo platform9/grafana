@@ -26,7 +26,19 @@ import (
 // 401: unauthorisedError
 // 403: forbiddenError
 func (hs *HTTPServer) AdminGetSettings(c *contextmodel.ReqContext) response.Response {
-	settings, err := hs.getAuthorizedSettings(c.Req.Context(), c.SignedInUser, hs.SettingsProvider.Current())
+	isVerbose := false
+	if _, disableAutoLogin := c.Req.URL.Query()["verbose"]; disableAutoLogin {
+		isVerbose = true
+	}
+
+	var settings any
+	var err error
+
+	if isVerbose {
+		settings, err = hs.getAuthorizedVerboseSettings(c.Req.Context(), c.SignedInUser, hs.SettingsProvider.CurrentVerbose())
+	} else {
+		settings, err = hs.getAuthorizedSettings(c.Req.Context(), c.SignedInUser, hs.SettingsProvider.Current())
+	}
 	if err != nil {
 		return response.Error(http.StatusForbidden, "Failed to authorize settings", err)
 	}
