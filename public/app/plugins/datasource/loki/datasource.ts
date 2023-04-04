@@ -652,7 +652,7 @@ export class LokiDatasource
     options?: RowContextOptions,
     origQuery?: DataQuery
   ): Promise<{ data: DataFrame[] }> => {
-    const direction = (options && options.direction) || 'BACKWARD';
+    const direction = (options && options.direction) || LokiQueryDirection.Backward;
     const limit = (options && options.limit) || 10;
     const { query, range } = await this.prepareLogRowContextQueryTarget(row, limit, direction, origQuery);
 
@@ -720,14 +720,12 @@ export class LokiDatasource
   prepareLogRowContextQueryTarget = async (
     row: LogRowModel,
     limit: number,
-    direction: 'BACKWARD' | 'FORWARD',
+    queryDirection: LokiQueryDirection,
     origQuery?: DataQuery
   ): Promise<{ query: LokiQuery; range: TimeRange }> => {
     let expr = await this.prepareContextExpr(row, origQuery);
 
     const contextTimeBuffer = 2 * 60 * 60 * 1000; // 2h buffer
-
-    const queryDirection = direction === 'FORWARD' ? LokiQueryDirection.Forward : LokiQueryDirection.Backward;
 
     const query: LokiQuery = {
       expr,
