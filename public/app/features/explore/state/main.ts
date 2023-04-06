@@ -1,9 +1,9 @@
 import { createAction } from '@reduxjs/toolkit';
 import { AnyAction } from 'redux';
 
-import { ExploreUrlState, serializeStateToUrlParam, SplitOpenOptions } from '@grafana/data';
+import { serializeStateToUrlParam, SplitOpenOptions } from '@grafana/data';
 import { DataSourceSrv, locationService } from '@grafana/runtime';
-import { GetExploreUrlArguments, stopQueryState } from 'app/core/utils/explore';
+import { GetExploreUrlArguments } from 'app/core/utils/explore';
 import { PanelModel } from 'app/features/dashboard/state';
 import { ExploreId, ExploreItemState, ExploreState } from 'app/types/explore';
 
@@ -13,7 +13,7 @@ import { createAsyncThunk, ThunkResult } from '../../../types';
 import { CorrelationData } from '../../correlations/useCorrelations';
 import { TimeSrv } from '../../dashboard/services/TimeSrv';
 
-import { paneReducer } from './explorePane';
+import { initializeExplore, paneReducer } from './explorePane';
 import { getUrlStateFromPaneState, makeExplorePaneState } from './utils';
 
 //
@@ -51,17 +51,17 @@ export const maximizePaneAction = createAction<{
 export const evenPaneResizeAction = createAction('explore/evenPaneResizeAction');
 
 /**
- * Resets state for explore.
- */
-export const resetExploreAction = createAction('explore/resetExplore');
-
-/**
  * Close the split view and save URL state.
  */
 export interface SplitCloseActionPayload {
   itemId: ExploreId;
 }
 export const splitCloseAction = createAction<SplitCloseActionPayload>('explore/splitClose');
+
+export interface SetPaneStateActionPayload {
+  [itemId: string]: Partial<ExploreItemState>;
+}
+export const setPaneState = createAction<SetPaneStateActionPayload>('explore/setPaneState');
 
 //
 // Action creators
@@ -101,24 +101,20 @@ export const stateSave = (options?: { replace?: boolean }): ThunkResult<void> =>
  */
 export const splitOpen = createAsyncThunk(
   'explore/splitOpen',
-  async (options: SplitOpenOptions | undefined, { getState }) => {
+  async (options: SplitOpenOptions | undefined, { getState, dispatch }) => {
     const leftState: ExploreItemState = getState().explore.panes.left!;
-    const leftUrlState = getUrlStateFromPaneState(leftState);
-    let rightUrlState: ExploreUrlState = leftUrlState;
 
-    if (options) {
-      const { query, queries } = options;
-
-      rightUrlState = {
-        datasource: options.datasourceUid,
-        queries: queries ?? (query ? [query] : []),
-        range: options.range || leftState.range,
-        panelsState: options.panelsState,
-      };
-    }
-
-    const urlState = serializeStateToUrlParam(rightUrlState);
-    locationService.partial({ right: urlState }, true);
+    dispatch(
+      initializeExplore({
+        exploreId: 'right',
+        containerWidth: 0,
+        // TODO: fix this
+        datasource: options?.datasourceUid || leftState.datasourceInstance?.uid!,
+        queries: options?.queries ?? (options?.query ? [options?.query] : leftState.queries),
+        range: options?.range || leftState.range,
+        panelsState: options?.panelsState || leftState.panelsState,
+      })
+    );
   }
 );
 
@@ -127,6 +123,7 @@ export const splitOpen = createAsyncThunk(
  * update the URL and let the components handle it because if we swap panes from right to left it is not easily apparent
  * from the URL.
  */
+// FIXME: this is superfluous, we can just use splitCloseAction
 export function splitClose(itemId: ExploreId): ThunkResult<void> {
   return (dispatch, getState) => {
     dispatch(splitCloseAction({ itemId }));
@@ -170,7 +167,7 @@ const initialExploreItemState = makeExplorePaneState();
 export const initialExploreState: ExploreState = {
   syncedTimes: false,
   panes: {
-    left: initialExploreItemState,
+    // left: initialExploreItemState,
   },
   correlations: undefined,
   richHistoryStorageFull: false,
@@ -262,23 +259,6 @@ export const exploreReducer = (state = initialExploreState, action: AnyAction): 
     };
   }
 
-  if (resetExploreAction.match(action)) {
-    // FIXME: reducers should REALLY not have side effects.
-    for (const [, pane] of Object.entries(state.panes).filter(([exploreId]) => exploreId !== 'left')) {
-      stopQueryState(pane!.querySubscription);
-    }
-
-    return {
-      ...initialExploreState,
-      panes: {
-        left: {
-          ...initialExploreItemState,
-          queries: state.panes.left!.queries,
-        },
-      },
-    };
-  }
-
   if (richHistorySettingsUpdatedAction.match(action)) {
     const richHistorySettings = action.payload;
     return {
@@ -297,18 +277,28 @@ export const exploreReducer = (state = initialExploreState, action: AnyAction): 
     };
   }
 
+  if (initializeExplore.pending.match(action)) {
+    return {
+      ...state,
+      panes: {
+        ...state.panes,
+        [action.meta.arg.exploreId]: initialExploreItemState,
+      },
+    };
+  }
+
   if (action.payload) {
     const { exploreId } = action.payload;
     if (exploreId !== undefined) {
       return {
         ...state,
-        panes: Object.entries(state.panes).reduce<ExploreState['panes']>((acc, [id, pane]) => {
+        panes: Object.entries(state.panes).reduce<ExploreState['panes']>((panes, [id, pane]) => {
           if (id === exploreId) {
-            acc[id] = paneReducer(pane, action);
+            panes[id] = paneReducer(pane, action);
           } else {
-            acc[id] = pane;
+            panes[id] = pane;
           }
-          return acc;
+          return panes;
         }, {}),
       };
     }
