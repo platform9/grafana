@@ -81,11 +81,12 @@ func SetupTestEnv(tb testing.TB, baseInterval time.Duration) (*ngalert.AlertNG, 
 
 	folderStore := folderimpl.ProvideDashboardFolderStore(sqlStore)
 
-	dashboardService := dashboardservice.ProvideDashboardServiceImpl(
+	dashboardService, err := dashboardservice.ProvideDashboardServiceImpl(
 		cfg, dashboardStore, folderStore, nil,
 		features, folderPermissions, dashboardPermissions, ac,
 		foldertest.NewFakeService(),
 	)
+	require.NoError(tb, err)
 
 	tracer := tracing.InitializeTracerForTest()
 	bus := bus.ProvideBus(tracer)
