@@ -1,5 +1,5 @@
-FROM node:12.18.3-alpine3.12 as js-builder
-
+FROM node:12.19.0-alpine3.12 as js-builder
+RUN apk add --no-cache python2 g++ make
 WORKDIR /usr/src/app/
 
 COPY package.json yarn.lock ./
@@ -16,7 +16,7 @@ COPY emails emails
 ENV NODE_ENV production
 RUN ./node_modules/.bin/grunt build
 
-FROM golang:1.15.1-alpine3.12 as go-builder
+FROM golang:1.19-alpine3.15 as go-builder
 
 RUN apk add --no-cache gcc g++
 
