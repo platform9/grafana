@@ -1,4 +1,4 @@
-FROM node:12.19.0-alpine3.12 as js-builder
+FROM node:12.22.5-alpine3.14 as js-builder
 RUN apk add --no-cache python2 g++ make
 WORKDIR /usr/src/app/
 
@@ -32,7 +32,7 @@ COPY build.go package.json ./
 RUN go run build.go build
 
 # Final stage
-FROM alpine:3.12
+FROM alpine:3.14
 
 LABEL maintainer="Grafana team <hello@grafana.com>"
 
