@@ -18,7 +18,7 @@ require (
 	github.com/benbjohnson/clock v0.0.0-20161215174838-7dc76406b6d3
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b
 	github.com/centrifugal/centrifuge v0.11.0
-	github.com/crewjam/saml v0.4.9
+	github.com/crewjam/saml v0.4.13
 	github.com/davecgh/go-spew v1.1.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec
 	github.com/facebookgo/inject v0.0.0-20180706035515-f23751cae28b
@@ -32,7 +32,7 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/gosimple/slug v1.4.2
 	github.com/grafana/grafana-plugin-model v0.0.0-20190930120109-1fc953a61fb4
 	github.com/grafana/grafana-plugin-sdk-go v0.77.0
@@ -59,7 +59,7 @@ require (
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/smartystreets/goconvey v1.6.4
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.8.1
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/timberio/go-datemath v0.1.1-0.20200323150745-74ddef604fff
 	github.com/ua-parser/uap-go v0.0.0-20190826212731-daf92ba38329
@@ -136,7 +136,7 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/prometheus/prometheus v1.8.2-0.20200727090838-6f296594a852 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/russellhaering/goxmldsig v1.1.1 // indirect
+	github.com/russellhaering/goxmldsig v1.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
@@ -158,6 +158,6 @@ require (
 	google.golang.org/protobuf v1.26.0-rc.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
-	gopkg.in/yaml.v3 v3.0.0-20220521103104-8f96da9f5d5e // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	xorm.io/builder v0.3.6 // indirect
 )
