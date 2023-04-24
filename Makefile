@@ -10,6 +10,16 @@ GO = GO111MODULE=on go
 GO_FILES ?= ./pkg/...
 SH_FILES ?= $(shell find ./scripts -name *.sh)
 
+
+BUILDDIR=$(CURDIR)
+registry_url ?= docker.io
+image_name = ${registry_url}/platform9/grafana
+DOCKERFILE?=$(CURDIR)/Dockerfile
+UPSTREAM_VERSION?=v7.2.3
+image_tag = $(UPSTREAM_VERSION)-pmk-$(TEAMCITY_BUILD_ID)
+PF9_TAG=$(image_name):${image_tag}
+
+
 all: deps build
 
 ##@ Dependencies
@@ -103,6 +113,15 @@ shellcheck: $(SH_FILES) ## Run checks for shell scripts.
 	$(SH_FILES) -e SC1071 -e SC2162
 
 ##@ Docker
+
+pf9-image: | $(BUILDDIR) ; $(info Building Docker image for pf9 Repo...) @ ## Build Coredns Network device plugin docker image
+	@docker build -t $(PF9_TAG) -f $(DOCKERFILE)  $(CURDIR) $(DOCKERARGS)
+	echo ${PF9_TAG} > $(BUILDDIR)/container-tag
+
+pf9-push: 
+	docker login
+	docker push $(PF9_TAG)\
+	&& docker rmi $(PF9_TAG)
 
 build-docker-dev: ## Build Docker image for development (fast).
 	@echo "build development container"
