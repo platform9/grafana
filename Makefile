@@ -11,20 +11,11 @@ GO_FILES ?= ./pkg/...
 SH_FILES ?= $(shell find ./scripts -name *.sh)
 
 
-GITCOMMIT:=$(shell git describe --dirty --always)
-BINARY:=grafana
-SYSTEM:=
-CHECKS:=check
-BUILDOPTS:=-v
-GOPATH?=$(HOME)/go
-MAKEPWD:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-CGO_ENABLED:=0
-
 BUILDDIR=$(CURDIR)
 registry_url ?= docker.io
 image_name = ${registry_url}/platform9/grafana
 DOCKERFILE?=$(CURDIR)/Dockerfile
-UPSTREAM_VERSION?=$(shell git describe --tags HEAD | sed 's/-.*//' )
+UPSTREAM_VERSION?=v7.2.3
 image_tag = $(UPSTREAM_VERSION)-pmk-$(TEAMCITY_BUILD_ID)
 PF9_TAG=$(image_name):${image_tag}
 
